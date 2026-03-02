@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMART BUILDING DIGITAL TWIN</title>
+    <style>
+        /* ==========================================================================
+           DESIGN SYSTEM: NEO-BRUTALISM
+           ========================================================================== */
+        :root {
+            /* Colors */
+            --bg-page: #e0e0e0;
+            --black: #000000;
+            --white: #ffffff;
+            
+            /* High Contrast Palette */
+            --accent-yellow: #ffcc00;
+            --accent-pink: #ff3366;
+            --accent-cyan: #00e5ff;
+            --accent-lime: #ccff00;
+            --accent-purple: #b000ff;
+            --accent-orange: #ff5500;
+            
+            /* Status Colors */
+            --status-normal: #00ff00;
+            --status-warning: #ffaa00;
+            --status-fault: #ff0000;
+
+            /* Borders & Shadows */
+            --border-thick: 6px solid var(--black);
+            --border-medium: 4px solid var(--black);
+            --border-thin: 2px solid var(--black);
+            --shadow-hard: 8px 8px 0px var(--black);
+            --shadow-hard-hover: 4px 4px 0px var(--black);
+            --shadow-hard-active: 0px 0px 0px var(--black);
+
+            /* Typography */
+            --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            --font-mono: "Courier New", Courier, monospace;
+            
+            /* Spacing */
+            --space-xs: 0.5rem;
+            --space-sm: 1rem;
+            --space-md: 1.5rem;
+            --space-lg: 2rem;
+            --space-xl: 3rem;
+        }
+
+        /* ==========================================================================
+           GLOBAL RESET
+           ========================================================================== */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            border-radius: 0 !important; /* STRICTLY NO ROUNDED CORNERS */
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-page);
+            color: var(--black);
+            padding: var(--space-lg);
+            line-height: 1.5;
+            background-image: radial-gradient(var(--black) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        h1, h2, h3, h4 {
+            text-transform: uppercase;
+            font-weight: 900;
+            letter-spacing: -1px;
+        }
+
+        /* ==========================================================================
+           LAYOUT SYSTEM
+           ========================================================================== */
+        .dashboard-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: grid;
+            gap: var(--space-lg);
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: var(--space-lg);
+        }
+
+        /* ==========================================================================
+           COMPONENTS
+           ========================================================================== */
+        .panel {
+            background-color: var(--white);
+            border: var(--border-thick);
+            box-shadow: var(--shadow-hard);
+            padding: var(--space-md);
+            position: relative;
+        }
+
+        .panel-header {
+            font-size: 2rem;
+            border-bottom: var(--border-thick);
+            padding-bottom: var(--space-xs);
+            margin-bottom: var(--space-md);
+            background-color: var(--black);
+            color: var(--white);
+            margin: calc(var(--space-md) * -1) calc(var(--space-md) * -1) var(--space-md) calc(var(--space-md) * -1);
+            padding: var(--space-sm) var(--space-md);
+        }
+
+        /* Buttons */
+        .brutalist-btn {
+            display: inline-block;
+            background-color: var(--accent-pink);
+            color: var(--black);
+            font-family: var(--font-main);
+            font-size: 1.25rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            padding: var(--space-sm) var(--space-lg);
+            border: var(--border-medium);
+            box-shadow: var(--shadow-hard);
+            cursor: pointer;
+            transition: all 0.1s ease;
+            text-align: center;
+            width: 100%;
+        }
+
+        .brutalist-btn:hover {
+            transform: translate(4px, 4px);
+            box-shadow: var(--shadow-hard-hover);
+            background-color: var(--accent-yellow);
+        }
+
+        .brutalist-btn:active {
+            transform: translate(8px, 8px);
+            box-shadow: var(--shadow-hard-active);
+        }
+
+        /* Data Displays */
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-sm);
+        }
+
+        .data-box {
+            border: var(--border-medium);
+            padding: var(--space-sm);
+            background-color: var(--accent-cyan);
+            text-align: center;
+        }
+
+        .data-box.yellow { background-color: var(--accent-yellow); }
+        .data-box.lime { background-color: var(--accent-lime); }
+        .data-box.pink { background-color: var(--accent-pink); }
+
+        .data-label {
+            font-size: 0.85rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            border-bottom: var(--border-thin);
+            margin-bottom: var(--space-xs);
+            padding-bottom: 2px;
+        }
+
+        .data-value {
+            font-family: var(--font-mono);
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .data-unit {
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        /* Forms & Inputs */
+        .control-group {
+            margin-bottom: var(--space-md);
+            background: var(--white);
+            border: var(--border-medium);
+            padding: var(--space-sm);
+        }
+
+        .control-label {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: var(--space-xs);
+        }
+
+        /* Sliders */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type=range]:focus {
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 32px;
+            cursor: pointer;
+            background: var(--white);
+            border: var(--border-medium);
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            height: 32px;
+            width: 40px;
+            background: var(--black);
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -4px;
+            border: 2px solid var(--white);
+        }
+        
+        input[type=range]::-moz-range-track {
+            width: 100%;
+            height: 32px;
+            cursor: pointer;
+            background: var(--white);
+            border: var(--border-medium);
+        }
+        
+        input[type=range]::-moz-range-thumb {
+            height: 32px;
+            width: 40px;
+            background: var(--black);
+            cursor: pointer;
+            border: 2px solid var(--white);
+        }
+
+        /* Toggles (Checkbox Hack) */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: var(--border-medium);
+            padding: var(--space-sm);
+            margin-bottom: var(--space-sm);
+            background-color: var(--white);
+            cursor: pointer;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .toggle-container:hover {
+            background-color: var(--bg-page);
+        }
+
+        .toggle-input {
+            display: none;
+        }
+
+        .toggle-switch {
+            width: 60px;
+            height: 30px;
+            border: var(--border-medium);
+            position: relative;
+            background-color: var(--white);
+            transition: background-color 0.2s;
+        }
+
+        .toggle-switch::after {
+            content: "";
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            width: 30px;
+            height: 30px;
+            background-color: var(--black);
+            border: var(--border-medium);
+            transition: transform 0.2s;
+        }
+
+        .toggle-input:checked + .toggle-switch {
+            background-color: var(--accent-lime);
+        }
+
+        .toggle-input:checked + .toggle-switch::after {
+            transform: translateX(30px);
+        }
+
+        .toggle-input:checked ~ .toggle-label::after {
+            content: " ON";
+            color: var(--black);
+            background: var(--accent-lime);
+            padding: 0 4px;
+            border: 2px solid var(--black);
+            margin-left: 8px;
+        }
+        
+        .toggle-label::after {
+            content: " OFF";
+            color: var(--white);
+            background: var(--black);
+            padding: 0 4px;
+            border: 2px solid var(--black);
+            margin-left: 8px;
+        }
+
+        /* Radio Buttons (Mode Selection) */
+        .radio-group {
+            display: flex;
+            gap: 0;
+            border: var(--border-medium);
+        }
+
+        .radio-label {
+            flex: 1;
+            text-align: center;
+            padding: var(--space-xs);
+            font-weight: 800;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-right: var(--border-medium);
+            background: var(--white);
+        }
+        
+        .radio-label:last-child {
+            border-right: none;
+        }
+
+        .radio-input {
+            display: none;
+        }
+
+        .radio-input:checked + .radio-label {
+            background: var(--black);
+            color: var(--white);
+        }
+
+        /* ==========================================================================
+           SPECIFIC SECTIONS
+           ========================================================================== */
+        
+        /* Header */
+        .main-header {
+            background-color: var(--accent-yellow);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 3rem;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .header-meta {
+            display: flex;
+            gap: var(--space-md);
+            align-items: center;
+        }
+
+        .status-badge {
+            font-family: var(--font-mono);
+            font-size: 1.5rem;
+            font-weight: 900;
+            padding: var(--space-xs) var(--space-sm);
+            border: var(--border-medium);
+            background-color: var(--status-normal);
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0.8; }
+        }
+
+        .time-display {
+            font-family: var(--font-mono);
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: var(--black);
+            color: var(--accent-lime);
+            padding: var(--space-xs) var(--space-sm);
+            border: var(--border-medium);
+        }
+
+        /* Weather Panel */
+        .weather-panel { background-color: var(--accent-cyan); }
+        .weather-panel .panel-header { background-color: var(--black); }
+
+        /* Indoor Panel */
+        .indoor-panel { background-color: var(--white); }
+        
+        .comfort-status {
+            margin-top: var(--space-md);
+            background: var(--accent-lime);
+            border: var(--border-medium);
+            padding: var(--space-sm);
+            text-align: center;
+            font-weight: 900;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+        }
+
+        /* AHU Panel */
+        .ahu-panel { background-color: var(--accent-purple); }
+        
+        /* Energy Panel */
+        .energy-panel { background-color: var(--accent-orange); }
+        
+        .power-usage {
+            border: var(--border-medium);
+            background: var(--black);
+            color: var(--accent-yellow);
+            padding: var(--space-sm);
+            text-align: center;
+            margin-bottom: var(--space-md);
+        }
+
+        .power-usage .data-value {
+            font-size: 4rem;
+        }
+
+        .graph-placeholder {
+            height: 200px;
+            border: var(--border-medium);
+            background: 
+                linear-gradient(transparent 19px, var(--black) 20px),
+                linear-gradient(90deg, transparent 19px, var(--black) 20px),
+                var(--white);
+            background-size: 20px 20px;
+            position: relative;
+            margin-bottom: var(--space-md);
+            overflow: hidden;
+        }
+
+        .graph-line {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(45deg, transparent 48%, var(--accent-pink) 48%, var(--accent-pink) 52%, transparent 52%),
+                linear-gradient(-45deg, transparent 48%, var(--accent-pink) 48%, var(--accent-pink) 52%, transparent 52%);
+            background-size: 60px 100%;
+            background-repeat: repeat-x;
+            background-position: bottom;
+            opacity: 0.8;
+        }
+
+        /* Faults Panel */
+        .faults-panel { background-color: var(--bg-page); }
+
+        .fault-log {
+            border: var(--border-medium);
+            background: var(--black);
+            color: var(--status-normal);
+            font-family: var(--font-mono);
+            padding: var(--space-sm);
+            height: 150px;
+            overflow-y: scroll;
+            margin-top: var(--space-md);
+        }
+
+        .fault-log p {
+            margin-bottom: var(--space-xs);
+            border-bottom: 1px dashed #333;
+            padding-bottom: 4px;
+        }
+        
+        .fault-log .error { color: var(--status-fault); }
+        .fault-log .warn { color: var(--status-warning); }
+
+        /* Security Panel */
+        .security-panel { background-color: var(--accent-yellow); }
+
+        .cctv-feed {
+            border: var(--border-medium);
+            background-color: var(--black);
+            height: 220px;
+            position: relative;
+            margin-top: var(--space-md);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .cctv-crosshair {
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--accent-lime);
+            position: relative;
+        }
+        
+        .cctv-crosshair::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: -20px;
+            right: -20px;
+            height: 2px;
+            background: var(--accent-lime);
+        }
+
+        .cctv-crosshair::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: -20px;
+            bottom: -20px;
+            width: 2px;
+            background: var(--accent-lime);
+        }
+
+        .rec-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: var(--status-fault);
+            font-family: var(--font-mono);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .rec-dot {
+            width: 12px;
+            height: 12px;
+            background-color: var(--status-fault);
+            animation: blink 1s infinite;
+        }
+
+        /* Utilities */
+        .mt-md { margin-top: var(--space-md); }
+
+        @media (max-width: 900px) {
+            .header-meta {
+                margin-top: var(--space-sm);
+                width: 100%;
+                justify-content: space-between;
+            }
+            .header-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    
+    <!-- HEADER -->
+    <header class="panel main-header">
+        <h1 class="header-title">SYS_CTRL // Digital Twin</h1>
+        <div class="header-meta">
+            <div class="status-badge">SYS: NORMAL</div>
+            <div class="time-display">T+ 14:32:00</div>
+        </div>
+    </header>
+
+    <main class="grid-layout">
+        
+        <!-- WEATHER CONTROL PANEL -->
+        <section class="panel weather-panel">
+            <h2 class="panel-header">Weather Ctrl</h2>
+            
+            <div class="control-group">
+                <div class="control-label">
+                    <span>Ext_Temp</span>
+                    <span style="font-family: var(--font-mono);">24.5°C</span>
+                </div>
+                <input type="range" min="-10" max="50" value="24.5">
+            </div>
+
+            <div class="control-group">
+                <div class="control-label">
+                    <span>Ext_Humidity</span>
+                    <span style="font-family: var(--font-mono);">60%</span>
+                </div>
+                <input type="range" min="0" max="100" value="60">
+            </div>
+
+            <label class="toggle-container">
+                <span class="toggle-label">Solar Radiation</span>
+                <input type="checkbox" class="toggle-input" checked>
+                <div class="toggle-switch"></div>
+            </label>
+
+            <button class="brutalist-btn mt-md">Apply Weather Data</button>
+        </section>
+
+        <!-- INDOOR COMFORT PANEL -->
+        <section class="panel indoor-panel">
+            <h2 class="panel-header">Zone Comfort</h2>
+            
+            <div class="data-grid">
+                <div class="data-box yellow">
+                    <div class="data-label">Temperature</div>
+                    <div class="data-value">22.1<span class="data-unit">°C</span></div>
+                </div>
+                <div class="data-box cyan">
+                    <div class="data-label">Relative Hum.</div>
+                    <div class="data-value">45<span class="data-unit">%</span></div>
+                </div>
+                <div class="data-box lime">
+                    <div class="data-label">CO2 Level</div>
+                    <div class="data-value">420<span class="data-unit">ppm</span></div>
+                </div>
+                <div class="data-box pink">
+                    <div class="data-label">Dew Point</div>
+                    <div class="data-value">9.5<span class="data-unit">°C</span></div>
+                </div>
+            </div>
+
+            <div class="comfort-status">
+                INDEX: OPTIMAL
+            </div>
+        </section>
+
+        <!-- AHU CONTROL PANEL -->
+        <section class="panel ahu-panel">
+            <h2 class="panel-header">AHU-01 Override</h2>
+            
+            <div class="control-group">
+                <div class="control-label">
+                    <span>OAD Position</span>
+                    <span style="font-family: var(--font-mono);">20%</span>
+                </div>
+                <input type="range" min="0" max="100" value="20">
+            </div>
+
+            <div class="control-group">
+                <div class="control-label">
+                    <span>CHW Valve</span>
+                    <span style="font-family: var(--font-mono);">65%</span>
+                </div>
+                <input type="range" min="0" max="100" value="65">
+            </div>
+            
+            <div class="control-group">
+                <div class="control-label">
+                    <span>HW Valve</span>
+                    <span style="font-family: var(--font-mono);">0%</span>
+                </div>
+                <input type="range" min="0" max="100" value="0">
+            </div>
+
+            <div class="control-group">
+                <div class="control-label">
+                    <span>SF Speed</span>
+                    <span style="font-family: var(--font-mono);">80%</span>
+                </div>
+                <input type="range" min="0" max="100" value="80">
+            </div>
+
+            <div class="radio-group mt-md">
+                <input type="radio" name="mode" id="mode-cool" class="radio-input" checked>
+                <label for="mode-cool" class="radio-label">Cool</label>
+                
+                <input type="radio" name="mode" id="mode-heat" class="radio-input">
+                <label for="mode-heat" class="radio-label">Heat</label>
+                
+                <input type="radio" name="mode" id="mode-auto" class="radio-input">
+                <label for="mode-auto" class="radio-label">Auto</label>
+            </div>
+        </section>
+
+        <!-- ENERGY MONITORING PANEL -->
+        <section class="panel energy-panel">
+            <h2 class="panel-header">Energy Grid</h2>
+            
+            <div class="power-usage">
+                <div class="data-label" style="border-bottom-color: #333;">Total Active Power</div>
+                <div class="data-value">145.2 <span class="data-unit" style="font-size: 1.5rem;">kW</span></div>
+            </div>
+
+            <div class="graph-placeholder">
+                <div class="graph-line"></div>
+            </div>
+
+            <label class="toggle-container">
+                <span class="toggle-label">Demand Response</span>
+                <input type="checkbox" class="toggle-input">
+                <div class="toggle-switch"></div>
+            </label>
+        </section>
+
+        <!-- FAULT DIAGNOSTICS PANEL -->
+        <section class="panel faults-panel">
+            <h2 class="panel-header">Fault Injector</h2>
+            
+            <label class="toggle-container">
+                <span class="toggle-label">Drift: Temp Sensor</span>
+                <input type="checkbox" class="toggle-input">
+                <div class="toggle-switch"></div>
+            </label>
+
+            <label class="toggle-container">
+                <span class="toggle-label">Stuck: Out Damper</span>
+                <input type="checkbox" class="toggle-input">
+                <div class="toggle-switch"></div>
+            </label>
+
+            <label class="toggle-container">
+                <span class="toggle-label">Clog: Pre-Filter</span>
+                <input type="checkbox" class="toggle-input">
+                <div class="toggle-switch"></div>
+            </label>
+
+            <div class="fault-log">
+                <p>> SYS_INIT: OK</p>
+                <p>> POLLING FIELD DEVICES...</p>
+                <p>> AHU-01: ONLINE</p>
+                <p>> CHILLER-1: ONLINE</p>
+                <p class="warn">> WRN: VAV-14 COMM DELAY</p>
+                <p>> SYNC COMPLETED.</p>
+                <p>> WAITING FOR INJECTION...</p>
+            </div>
+        </section>
+
+        <!-- SECURITY PANEL -->
+        <section class="panel security-panel">
+            <h2 class="panel-header">Access & SEC</h2>
+            
+            <button class="brutalist-btn">SIMULATE RFID SCAN</button>
+
+            <div class="cctv-feed">
+                <div class="rec-indicator">
+                    <div class="rec-dot"></div> REC
+                </div>
+                <div class="cctv-crosshair"></div>
+                <div style="position: absolute; bottom: 10px; left: 10px; color: var(--accent-lime); font-family: var(--font-mono); font-weight: bold;">CAM_04 // MAIN_ENTRANCE</div>
+            </div>
+
+            <div class="control-group mt-md" style="margin-bottom: 0;">
+                <div class="data-label">Latest Access Log</div>
+                <div style="font-family: var(--font-mono); font-weight: bold;">
+                    [14:28:11] UID_8472 GRANTED<br>
+                    [14:15:02] UID_1193 DENIED<br>
+                    [13:59:44] UID_8472 GRANTED
+                </div>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+</body>
+</html>
